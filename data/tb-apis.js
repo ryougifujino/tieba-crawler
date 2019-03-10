@@ -14,9 +14,9 @@ const getThreadList = async (barName, page) => {
         let link = titleDom.getAttribute('href');
 
         const authorDom = headDom.querySelector('.pull_right > span');
-        let author = authorDom.getAttribute('title').substring(5);
+        let author = authorDom.getAttribute('title').substring(6);
 
-        threads.push({title, link, author});
+        threads.push({link, author, title});
         return threads;
     }, []);
 };
