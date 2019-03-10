@@ -17,8 +17,8 @@ function scrawl(barName, from, to) {
 
     lock = true;
     const outputFilePath = `${OUTPUT_DIR + barName}.txt`;
-    if (from === 0) {
-        fs.unlinkSync(outputFilePath);
+    if (from === 0 && fs.existsSync(outputFilePath)) {
+        fs.unlink(outputFilePath, (err) => console.error(err));
     }
     if (from >= to) return;
     let allThreads = [];
