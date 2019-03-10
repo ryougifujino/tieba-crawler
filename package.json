@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/ryougifujino/tieba-crawler/issues"
   },
-  "homepage": "https://github.com/ryougifujino/tieba-crawler#readme"
+  "homepage": "https://github.com/ryougifujino/tieba-crawler#readme",
+  "dependencies": {
+    "jsdom": "^14.0.0"
+  }
 }
