@@ -12,7 +12,7 @@ let lock = false;
 
 let timeStart;
 
-function _scrawl(barName, from, to) {
+function _crawl(barName, from, to) {
     if (lock) {
         logger.error('Crawler has been launched, please wait!');
         return;
@@ -29,7 +29,7 @@ function _scrawl(barName, from, to) {
     }
     const outputFilePath = `${OUTPUT_DIR + barName}.txt`;
     if (from === 0 && fs.existsSync(outputFilePath)) {
-        fs.unlink(outputFilePath, (err) => err && logger.error("thread-crawler#_scrawl@unlink", err));
+        fs.unlink(outputFilePath, (err) => err && logger.error("thread-crawler#_crawl@unlink", err));
     }
     // the last page
     if (from >= to) {
@@ -52,9 +52,9 @@ function _scrawl(barName, from, to) {
             });
             logger.log(`[${barName}] PageNumber∈[${from + 1}, ${end}] finished.`);
             lock = false;
-            _scrawl(barName, end, to);
+            _crawl(barName, end, to);
         }).catch(reason => {
-            logger.error("threads-crawler#_scrawl@catch", reason);
+            logger.error("threads-crawler#_crawl@catch", reason);
 
             // replace rejected items with new items
             pageThreadsPromiseList.forEach((pageThreadsPromise, index) => {
@@ -70,10 +70,10 @@ function _scrawl(barName, from, to) {
     persistInOrder();
 }
 
-function scrawl(barName, endPage) {
-    _scrawl(barName, endPage);
+function crawl(barName, endPage) {
+    _crawl(barName, endPage);
 }
 
 module.exports = {
-    scrawl
+    crawl
 };

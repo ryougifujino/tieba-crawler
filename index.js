@@ -7,5 +7,5 @@ stdin.addListener("data", function (d) {
         console.error("Error input!");
         return;
     }
-    threadsCrawler.scrawl(...args);
+    threadsCrawler.crawl(...args);
 });
