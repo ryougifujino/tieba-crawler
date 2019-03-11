@@ -24,6 +24,7 @@ function log(message) {
 }
 
 function error(message) {
+    console.log(message);
     _(FLAG_ERROR, message);
 }
 

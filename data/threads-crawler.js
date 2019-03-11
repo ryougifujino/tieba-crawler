@@ -35,6 +35,7 @@ function _scrawl(barName, from, to) {
     if (from >= to) {
         logger.log(`[${barName}] Time Consuming: ${(new Date() - timeStart) / 1000} seconds.`);
         logger.log(`[${barName}] ---------------------END---------------------`);
+        lock = false;
         return;
     }
     let allThreads = [];
