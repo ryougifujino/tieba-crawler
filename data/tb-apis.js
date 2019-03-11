@@ -3,7 +3,7 @@ const request = require('../util/request-promise.js');
 
 let barProtocols = {};
 
-const getThreadList = async (barName, page) => {
+const getPageThreads = async (barName, page) => {
     let protocol = barProtocols[barName];
     if (!protocol) {
         protocol = await request.getProtocol(`://tieba.baidu.com/f?kw=${barName}&ie=utf-8`);
@@ -29,5 +29,5 @@ const getThreadList = async (barName, page) => {
 };
 
 module.exports = {
-    getThreadList
+    getPageThreads
 };

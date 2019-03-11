@@ -38,24 +38,36 @@ function _scrawl(barName, from, to) {
         lock = false;
         return;
     }
-    let allThreads = [];
+    let pageThreadsPromiseList = [];
     const end = Math.min(from + (from === 0 ? FIRST_LIMIT : LIMIT), to);
     for (let i = from; i < end; i++) {
-        allThreads.push(tbApis.getThreadList(barName, STEP * i));
+        pageThreadsPromiseList.push(tbApis.getPageThreads(barName, STEP * i));
     }
 
-    Promise.all(allThreads).then(allThreads => {
-        allThreads.forEach(pageThreads => {
-            fs.appendFileSync(outputFilePath,
-                pageThreads.map(thread => JSON.stringify(thread)).join(SEPARATOR) + SEPARATOR)
+    const persistInOrder = () => {
+        Promise.all(pageThreadsPromiseList).then(pageThreadsList => {
+            pageThreadsList.forEach(pageThreads => {
+                fs.appendFileSync(outputFilePath,
+                    pageThreads.map(thread => JSON.stringify(thread)).join(SEPARATOR) + SEPARATOR)
+            });
+            logger.log(`[${barName}] PageNumber∈[${from + 1}, ${end}] finished.`);
+            lock = false;
+            _scrawl(barName, end, to);
+        }).catch(reason => {
+            logger.error("threads-crawler#_scrawl@catch", reason);
+
+            // replace rejected items with new items
+            pageThreadsPromiseList.forEach((pageThreadsPromise, index) => {
+                pageThreadsPromise.catch(() => {
+                    pageThreadsPromiseList[index] = tbApis.getPageThreads(barName, STEP * (from + index))
+                })
+            });
+            // retry
+            logger.log(`[${barName}] PageNumber∈[${from + 1}, ${end}] retrying...`);
+            persistInOrder();
         });
-        logger.log(`[${barName}] PageNumber∈[${from + 1}, ${end}] finished.`);
-        lock = false;
-        _scrawl(barName, end, to);
-    }).catch(reason => {
-        logger.error("threads-crawler#_scrawl@catch", reason);
-        lock = false;
-    });
+    };
+    persistInOrder();
 }
 
 function scrawl(barName, endPage) {
