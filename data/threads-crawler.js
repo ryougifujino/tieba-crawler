@@ -14,7 +14,7 @@ let timeStart;
 
 function _scrawl(barName, from, to) {
     if (lock) {
-        logger.error('Crawler has launched, please wait!');
+        logger.error('Crawler has been launched, please wait!');
         return;
     }
 
