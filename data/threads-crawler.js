@@ -16,6 +16,9 @@ function scrawl(barName, from, to) {
     }
 
     lock = true;
+    if (!fs.existsSync(OUTPUT_DIR)) {
+        fs.mkdirSync(OUTPUT_DIR);
+    }
     const outputFilePath = `${OUTPUT_DIR + barName}.txt`;
     if (from === 0 && fs.existsSync(outputFilePath)) {
         fs.unlink(outputFilePath, (err) => console.error(err));
