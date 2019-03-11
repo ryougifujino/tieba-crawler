@@ -1,10 +1,11 @@
 const tbApis = require('./tb-apis');
 const logger = require('../util/logger');
 const fs = require('fs');
+const config = require('./config');
 
 const STEP = 50;
-const LIMIT = 20;
-const FIRST_LIMIT = 5;
+const LIMIT = config.LIMIT_CRAWL_ONCE;
+const FIRST_LIMIT = config.LIMIT_FIRST_CRAWL;
 const OUTPUT_DIR = `output/result/`;
 const SEPARATOR = ',\n';
 
