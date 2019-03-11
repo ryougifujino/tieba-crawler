@@ -9,13 +9,17 @@ function makeLogName() {
     return `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
 }
 
-function _(flag, message) {
+function _(flag, ...messages) {
     if (!fs.existsSync(OUTPUT_DIR)) {
         fs.mkdirSync(OUTPUT_DIR, {recursive: true});
     }
+    messages = messages.reduce((messagesStr, message, index) => {
+        messagesStr += JSON.stringify(message);
+        return messagesStr + (index === messages.length - 1 ? '' : ' ');
+    }, "");
+    messages = `${new Date().toLocaleString()} - ${messages}\n`;
     let fileName = `${flag}_${makeLogName()}`;
-    message = new Date().toLocaleString() + ' - ' + JSON.stringify(message) + '\n';
-    fs.appendFileSync(`${OUTPUT_DIR + fileName}.log`, message);
+    fs.appendFileSync(`${OUTPUT_DIR + fileName}.log`, messages);
 }
 
 function log(message) {

@@ -29,7 +29,7 @@ function _scrawl(barName, from, to) {
     }
     const outputFilePath = `${OUTPUT_DIR + barName}.txt`;
     if (from === 0 && fs.existsSync(outputFilePath)) {
-        fs.unlink(outputFilePath, (err) => err && logger.error(err));
+        fs.unlink(outputFilePath, (err) => err && logger.error("thread-crawler#_scrawl@unlink", err));
     }
     // the last page
     if (from >= to) {
@@ -53,7 +53,8 @@ function _scrawl(barName, from, to) {
         lock = false;
         _scrawl(barName, end, to);
     }).catch(reason => {
-        logger.error(reason);
+        logger.error("threads-crawler#_scrawl@catch", reason);
+        lock = false;
     });
 }
 

@@ -22,7 +22,7 @@ function getProtocol(url) {
                 default:
                     reject(new Error(`Request failed, status code: ${statusCode}`));
             }
-        });
+        }).on('error', err => reject(err));
     });
 }
 
@@ -34,7 +34,7 @@ function get(protocol, url) {
             response.on('data', chunk => body.push(chunk));
             response.on('end', () => resolve(Buffer.concat(body).toString()))
                 .on('error', err => reject(err));
-        });
+        }).on('error', err => reject(err));
     });
 }
 
