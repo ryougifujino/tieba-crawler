@@ -1,10 +1,14 @@
 const http = require('http');
 const https = require('https');
+const logger = require('./logger');
 
 const PROTOCOL_HTTP = "http";
 const PROTOCOL_HTTPS = "https";
 
 const REQUEST = {http, https};
+const GET_OPTIONS = {
+    timeout: 60 * 1000
+};
 
 
 function getProtocol(url) {
@@ -29,12 +33,17 @@ function getProtocol(url) {
 function get(protocol, url) {
     url = protocol + encodeURI(url);
     return new Promise((resolve, reject) => {
-        REQUEST[protocol]['get'](url, response => {
+        let request = REQUEST[protocol]['get'](url, GET_OPTIONS, response => {
             let body = [];
             response.on('data', chunk => body.push(chunk));
             response.on('end', () => resolve(Buffer.concat(body).toString()))
                 .on('error', err => reject(err));
-        }).on('error', err => reject(err));
+        })
+            .on('timeout', () => {
+                logger.error("request-promise#get@on", url);
+                request.abort();
+            })
+            .on('error', err => reject(err));
     });
 }
 
