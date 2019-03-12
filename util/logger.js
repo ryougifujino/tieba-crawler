@@ -22,14 +22,14 @@ function _(flag, ...messages) {
     fs.appendFileSync(`${OUTPUT_DIR + fileName}.log`, messages);
 }
 
-function log(message) {
-    console.log(message);
-    _(FLAG_LOG, message);
+function log(...messages) {
+    console.log(...messages);
+    _(FLAG_LOG, ...messages);
 }
 
-function error(message) {
-    console.log(message);
-    _(FLAG_ERROR, message);
+function error(...messages) {
+    console.error(...messages);
+    _(FLAG_ERROR, ...messages);
 }
 
 module.exports = {
