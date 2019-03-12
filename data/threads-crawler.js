@@ -51,30 +51,44 @@ function _crawl(barName, from, to) {
 
     const persistInOrder = () => {
         Promise.all(pageThreadsPromiseList).then(pageThreadsList => {
-            pageThreadsList.forEach(pageThreads => {
-                fs.appendFileSync(outputFilePath,
-                    pageThreads.map(thread => JSON.stringify(thread)).join(SEPARATOR) + SEPARATOR)
+            // check empty result and refresh
+            let indexListOfEmptyPageThreads = [];
+            pageThreadsList.forEach((pageThreads, index) => {
+                if (!pageThreads.length) {
+                    indexListOfEmptyPageThreads.push(from + index);
+                    refreshPageThreadsPromise(index);
+                }
             });
-            logger.log(`[${barName}] PageNumber∈[${from + 1}, ${end}] finished.`);
-            lock = false;
-            _crawl(barName, end, to);
+
+            if (indexListOfEmptyPageThreads.length) {
+                // has empty result, retry
+                logger.log(`[${barName}] PageNumber∈{${indexListOfEmptyPageThreads.join(',')}} are empty, retrying...`);
+                persistInOrder();
+            } else {
+                // all result are ok
+                pageThreadsList.forEach(pageThreads => {
+                    let pageContent = pageThreads.map(thread => JSON.stringify(thread)).join(SEPARATOR) + SEPARATOR;
+                    fs.appendFileSync(outputFilePath, pageContent);
+                });
+                logger.log(`[${barName}] PageNumber∈[${from + 1}, ${end}] finished.`);
+                lock = false;
+                _crawl(barName, end, to);
+            }
         }).catch(reason => {
             logger.error("threads-crawler#_crawl#persistInOrder@catch", reason);
 
             // replace rejected items with new items
             pageThreadsPromiseList.forEach((pageThreadsPromise, index) => {
-                pageThreadsPromise.catch(() => {
-                    try {
-                        pageThreadsPromiseList[index] = tbApis.getPageThreads(barName, STEP * (from + index))
-                    } catch (e) {
-                        logger.error("threads-crawler#_crawl#persistInOrder@getPageThreads", e);
-                    }
-                })
+                pageThreadsPromise.catch(() => refreshPageThreadsPromise(index));
             });
             // retry
             logger.log(`[${barName}] PageNumber∈[${from + 1}, ${end}] retrying...`);
             persistInOrder();
         });
+
+        function refreshPageThreadsPromise(index) {
+            pageThreadsPromiseList[index] = tbApis.getPageThreads(barName, STEP * (from + index));
+        }
     };
     persistInOrder();
 }
