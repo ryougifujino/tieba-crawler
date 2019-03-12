@@ -42,7 +42,11 @@ function _crawl(barName, from, to) {
     let pageThreadsPromiseList = [];
     const end = Math.min(from + (from === 0 ? FIRST_LIMIT : LIMIT), to);
     for (let i = from; i < end; i++) {
-        pageThreadsPromiseList.push(tbApis.getPageThreads(barName, STEP * i));
+        try {
+            pageThreadsPromiseList.push(tbApis.getPageThreads(barName, STEP * i));
+        } catch (e) {
+            logger.error("threads-crawler#_crawl@getPageThreads", e);
+        }
     }
 
     const persistInOrder = () => {
@@ -55,12 +59,16 @@ function _crawl(barName, from, to) {
             lock = false;
             _crawl(barName, end, to);
         }).catch(reason => {
-            logger.error("threads-crawler#_crawl@catch", reason);
+            logger.error("threads-crawler#_crawl#persistInOrder@catch", reason);
 
             // replace rejected items with new items
             pageThreadsPromiseList.forEach((pageThreadsPromise, index) => {
                 pageThreadsPromise.catch(() => {
-                    pageThreadsPromiseList[index] = tbApis.getPageThreads(barName, STEP * (from + index))
+                    try {
+                        pageThreadsPromiseList[index] = tbApis.getPageThreads(barName, STEP * (from + index))
+                    } catch (e) {
+                        logger.error("threads-crawler#_crawl#persistInOrder@getPageThreads", e);
+                    }
                 })
             });
             // retry
