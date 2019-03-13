@@ -21,16 +21,15 @@ function _crawl(barName, from, to) {
 
     lock = true;
     if (!to) {
-        ({to, from} = {to: from, from: 0});
+        [to, from] = [from, 0];
         timeStart = new Date();
         logger.log(`[${barName}] --------------------START--------------------`);
     }
-    if (!fs.existsSync(OUTPUT_DIR)) {
-        fs.mkdirSync(OUTPUT_DIR, {recursive: true});
-    }
+    // ensure directory
+    !fs.existsSync(OUTPUT_DIR) && fs.mkdirSync(OUTPUT_DIR, {recursive: true});
     const outputFilePath = `${OUTPUT_DIR + barName}.txt`;
     if (from === 0 && fs.existsSync(outputFilePath)) {
-        fs.unlink(outputFilePath, (err) => err && logger.error("thread-crawler#_crawl@unlink", err));
+        fs.unlink(outputFilePath, err => err && logger.error("thread-crawler#_crawl@unlink", err));
     }
     // the last page
     if (from >= to) {
@@ -39,14 +38,12 @@ function _crawl(barName, from, to) {
         lock = false;
         return;
     }
+
+    // requests in once
     let pageThreadsPromiseList = [];
     const end = Math.min(from + (from === 0 ? FIRST_LIMIT : LIMIT), to);
     for (let i = from; i < end; i++) {
-        try {
-            pageThreadsPromiseList.push(tbApis.getPageThreads(barName, STEP * i));
-        } catch (e) {
-            logger.error("threads-crawler#_crawl@getPageThreads", e);
-        }
+        pageThreadsPromiseList.push(tbApis.getPageThreads(barName, STEP * i));
     }
 
     const persistInOrder = () => {
@@ -78,19 +75,18 @@ function _crawl(barName, from, to) {
             logger.error("threads-crawler#_crawl#persistInOrder@catch", reason);
 
             // replace rejected items with new items
-            pageThreadsPromiseList.forEach((pageThreadsPromise, index) => {
-                pageThreadsPromise.catch(() => refreshPageThreadsPromise(index));
-            });
+            pageThreadsPromiseList.forEach((pageThreadsPromise, index) =>
+                pageThreadsPromise.catch(() => refreshPageThreadsPromise(index)));
             // retry
             logger.log(`[${barName}] PageNumber∈[${from + 1}, ${end}] retrying...`);
             persistInOrder();
         });
-
-        function refreshPageThreadsPromise(index) {
-            pageThreadsPromiseList[index] = tbApis.getPageThreads(barName, STEP * (from + index));
-        }
     };
     persistInOrder();
+
+    function refreshPageThreadsPromise(index) {
+        pageThreadsPromiseList[index] = tbApis.getPageThreads(barName, STEP * (from + index));
+    }
 }
 
 function crawl(barName, endPage) {
