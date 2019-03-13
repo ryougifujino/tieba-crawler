@@ -4,12 +4,12 @@ const OUTPUT_DIR = "output/logs/";
 const FLAG_LOG = "LOG";
 const FLAG_ERROR = "ERROR";
 
-function makeLogName() {
+function makeLogName(logFlag) {
     let today = new Date();
-    return `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
+    return `${logFlag}_${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
 }
 
-function _(flag, ...messages) {
+function _(logFlag, ...messages) {
     if (!fs.existsSync(OUTPUT_DIR)) {
         fs.mkdirSync(OUTPUT_DIR, {recursive: true});
     }
@@ -18,8 +18,7 @@ function _(flag, ...messages) {
         return messagesStr + (index === messages.length - 1 ? '' : ' ');
     }, "");
     messages = `${new Date().toLocaleString()} - ${messages}\n`;
-    let fileName = `${flag}_${makeLogName()}`;
-    fs.appendFileSync(`${OUTPUT_DIR + fileName}.log`, messages);
+    fs.appendFileSync(`${OUTPUT_DIR + makeLogName(logFlag)}.log`, messages);
 }
 
 function log(...messages) {

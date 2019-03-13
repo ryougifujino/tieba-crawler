@@ -14,8 +14,7 @@ const GET_OPTIONS = {
 function getProtocol(url) {
     url = PROTOCOL_HTTP + encodeURI(url);
     return new Promise((resolve, reject) => {
-        http.get(url, response => {
-            let {statusCode} = response;
+        let request = http.get(url, GET_OPTIONS, ({statusCode}) => {
             switch (statusCode) {
                 case 200:
                     resolve(PROTOCOL_HTTP);
@@ -26,7 +25,12 @@ function getProtocol(url) {
                 default:
                     reject(new Error(`Request failed, status code: ${statusCode}`));
             }
-        }).on('error', err => reject(err));
+        })
+            .on('timeout', () => {
+                logger.error("request-promise#getProtocol@on", url);
+                request.abort();
+            })
+            .on('error', err => reject(err));
     });
 }
 
