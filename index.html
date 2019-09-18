@@ -9,8 +9,25 @@
 </head>
 <body>
 <div id="app">
+    <div class="choose-file-container">
+        <el-button class="choose-file-box">
+            <input type="file"
+                   class="choose-file"
+                   @change="onTextChosen($event.target.files[0])">选择文件
+        </el-button>
+    </div>
     <div>
-        <input type="file" @change="onTextChosen($event.target.files[0])">
+        <el-table :data="threads" class="threads-table">
+            <el-table-column
+                    label="作者"
+                    prop="author"
+                    width="300">
+            </el-table-column>
+            <el-table-column
+                    label="标题"
+                    prop="title">
+            </el-table-column>
+        </el-table>
     </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/vue@2.6.10/dist/vue.min.js"></script>
