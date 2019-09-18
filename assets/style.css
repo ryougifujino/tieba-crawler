@@ -26,6 +26,10 @@
     cursor: pointer;
 }
 
+.visible-threads-limit-input {
+    width: 150px;
+}
+
 .threads-table {
     width: 100%;
 }
