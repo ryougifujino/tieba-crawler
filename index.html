@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Output Viewer</title>
+    <link href="https://cdn.jsdelivr.net/npm/element-ui@2.4.11/lib/theme-chalk/index.css"
+          rel="stylesheet">
+    <link href="./assets/style.css" rel="stylesheet">
+</head>
+<body>
+<div id="app">
+    <div>
+        <input type="file" @change="onTextChosen($event.target.files[0])">
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/vue@2.6.10/dist/vue.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/element-ui@2.4.11/lib/index.js"></script>
+<script>
+    const TEXT_TYPE = /text.*/;
+    new Vue({
+        el: '#app',
+        data: {
+            threads: []
+        },
+        methods: {
+            onTextChosen(file) {
+                if (file.type.match(TEXT_TYPE)) {
+                    const reader = new FileReader();
+                    reader.readAsText(file);
+                    reader.onload = () => {
+                        const result = reader.result.trim();
+                        const text = '[' + result.substr(0, result.length - 1) + ']';
+                        this.threads = JSON.parse(text);
+                    };
+                } else {
+                    this.text = "不支持的文件类型!"
+                }
+            }
+        }
+    });
+</script>
+</body>
+</html>

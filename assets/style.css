@@ -1,0 +1,10 @@
+#app {
+    max-width: 80%;
+    margin: 0 auto;
+}
+
+.choose-file {
+    display: block;
+    width: 360px;
+    margin: 0 auto;
+}
