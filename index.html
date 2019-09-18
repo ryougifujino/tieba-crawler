@@ -27,15 +27,21 @@
         <el-table :data="visibleThreads" class="threads-table">
             <el-table-column prop="author"
                              width="300">
-                <template slot="header" slot-scope="scope">
+                <template #header>
                     <el-input v-model="keywordAuthor"
                               placeholder="输入作者关键字搜索"/>
                 </template>
             </el-table-column>
             <el-table-column prop="title">
-                <template slot="header" slot-scope="scope">
+                <template #header>
                     <el-input v-model="keywordTitle"
                               placeholder="输入标题关键字搜索"/>
+                </template>
+                <template #default="{row}">
+                    <a :href="`https://tieba.baidu.com${row.link}`"
+                       target="_blank">
+                        {{row.title}}
+                    </a>
                 </template>
             </el-table-column>
         </el-table>
