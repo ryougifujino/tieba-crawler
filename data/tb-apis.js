@@ -28,6 +28,18 @@ const getPageThreads = async (barName, page) => {
     }, []);
 };
 
+const getThreadPageNumber = async (barName, threadId) => {
+    const protocol = barProtocols[barName];
+    if (!protocol) {
+        return new Error('unknown protocol of the provided bar name');
+    }
+    const body = await request.get(protocol, `://tieba.baidu.com/p/${threadId}?pn=1`);
+    const {window: {document}} = new JSDOM(body);
+    const pageNumberNode = document.querySelector('.p_thread .l_thread_info .l_posts_num > li:last-child input');
+    const pageNumberString = pageNumberNode.getAttribute('max-page') || '0';
+    return parseInt(pageNumberString);
+};
+
 const getPagePosts = async (barName, threadId, page) => {
     const protocol = barProtocols[barName];
     if (!protocol) {
@@ -74,7 +86,7 @@ const getPagePosts = async (barName, threadId, page) => {
 barProtocols['冒险岛'] = 'https';
 
 !async function () {
-    const posts = await getPagePosts('冒险岛', '5750286932', 1);
+    const posts = await getThreadPageNumber('冒险岛', '5750286932');
     console.log(posts);
 }();
 
