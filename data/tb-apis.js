@@ -1,5 +1,6 @@
 const {JSDOM} = require('jsdom');
 const request = require('../util/request-promise.js');
+const {timestampToReadable} = require('../util/date-utils');
 
 const barProtocols = {};
 
@@ -28,7 +29,7 @@ const getPageThreads = async (barName, page) => {
     }, []);
 };
 
-const getThreadPageNumber = async (barName, threadId) => {
+const getThreadMaxPageNumber = async (barName, threadId) => {
     const protocol = barProtocols[barName];
     if (!protocol) {
         return new Error('unknown protocol of the provided bar name');
@@ -83,10 +84,38 @@ const getPagePosts = async (barName, threadId, page) => {
     }, []);
 };
 
+const getPageCommentMap = async (threadId, page) => {
+    const t = new Date().getTime();
+    const result = await request.get('https', `://tieba.baidu.com/p/totalComment?t=${t}&tid=${threadId}&pn=${page}`);
+    const {data, errmsg} = JSON.parse(result);
+    if (!data) {
+        throw new Error(errmsg);
+    }
+    const {comment_list: commentMap, user_list: userMap} = data;
+    const pageCommentMap = {};
+    Object.keys(commentMap).forEach(postId => {
+        const comments = commentMap[postId].comment_info;
+        pageCommentMap[postId] = comments.map(comment => ({
+            comment_id: comment.comment_id,
+            content: comment.content,
+            created_time: timestampToReadable(comment.now_time),
+            post_id: postId,
+            thread_id: comment.thread_id,
+            username: comment.username,
+            nickname: userMap[comment.user_id].display_name
+        }));
+    });
+    return pageCommentMap;
+};
+
+const getComments = async () => {
+
+};
+
 barProtocols['冒险岛'] = 'https';
 
 !async function () {
-    const posts = await getThreadPageNumber('冒险岛', '5750286932');
+    const posts = await getPageCommentMap('5750286932', '1');
     console.log(posts);
 }();
 
