@@ -123,13 +123,10 @@ const getComments = async (threadId, postId, page) => {
     });
 };
 
-barProtocols['冒险岛'] = 'https';
-
-!async function () {
-    const comments = await getComments('5750286932', '120319704689', 1);
-    console.log(comments);
-}();
-
 module.exports = {
-    getPageThreads
+    getPageThreads,
+    getThreadMaxPageNumber,
+    getPagePosts,
+    getPageCommentMap,
+    getComments
 };
