@@ -108,15 +108,26 @@ const getPageCommentMap = async (threadId, page) => {
     return pageCommentMap;
 };
 
-const getComments = async () => {
-
+const getComments = async (threadId, postId, page) => {
+    const t = new Date().getTime();
+    const result = await request.get('https', `://tieba.baidu.com/p/comment?tid=${threadId}&pid=${postId}&pn=${page}&t=${t}`);
+    const commentNodes = [...new JSDOM(result).window.document.querySelectorAll('.lzl_single_post.j_lzl_s_p')];
+    return commentNodes.map(commentNode => {
+        const fromNode = commentNode.querySelector('.lzl_cnt > a');
+        const from_username = fromNode.getAttribute('username');
+        const from_nickname = fromNode.textContent;
+        const contentNode = commentNode.querySelector('.lzl_cnt .lzl_content_main');
+        const content = (contentNode.textContent).trim();
+        const created_time = commentNode.querySelector('.lzl_cnt .lzl_content_reply .lzl_time').textContent;
+        return {from_username, from_nickname, content, created_time};
+    });
 };
 
 barProtocols['冒险岛'] = 'https';
 
 !async function () {
-    const posts = await getPageCommentMap('5750286932', '1');
-    console.log(posts);
+    const comments = await getComments('5750286932', '120319704689', 1);
+    console.log(comments);
 }();
 
 module.exports = {
