@@ -1,4 +1,4 @@
 module.exports = {
-    LIMIT_CRAWL_ONCE: 100,
+    LIMIT_CRAWL_ONCE: 20,
     LIMIT_FIRST_CRAWL: 5
 };
