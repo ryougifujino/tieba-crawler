@@ -38,7 +38,7 @@
                               placeholder="输入标题关键字搜索"/>
                 </template>
                 <template #default="{row}">
-                    <a :href="`https://tieba.baidu.com${row.link}`"
+                    <a :href="`https://tieba.baidu.com/p/${row.thread_id}`"
                        target="_blank">
                         {{row.title}}
                     </a>
