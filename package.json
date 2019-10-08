@@ -18,6 +18,8 @@
   },
   "homepage": "https://github.com/ryougifujino/tieba-crawler#readme",
   "dependencies": {
-    "jsdom": "^14.0.0"
+    "jsdom": "^14.0.0",
+    "sequelize": "^5.19.3",
+    "sqlite3": "^4.1.0"
   }
 }
