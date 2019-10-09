@@ -18,13 +18,23 @@ const getPageThreads = async (barName, page) => {
         const headNode = thread.querySelector('.threadlist_lz.clearfix');
 
         const titleNode = headNode.querySelector('.j_th_tit a');
-        let title = titleNode.getAttribute('title');
-        let thread_id = titleNode.getAttribute('href').slice(3);
+        const title = titleNode.getAttribute('title');
+        const thread_id = titleNode.getAttribute('href').slice(3);
 
         const authorNode = headNode.querySelector('.pull_right > span');
-        let author = authorNode.getAttribute('title').substring(6);
+        const nickname = authorNode.getAttribute('title').substring(6);
+        const usernameNode = authorNode.querySelector('.frs-author-name-wrap > a');
+        let username = null;
+        if (usernameNode) {
+            try {
+                const usernameJson = JSON.parse(usernameNode.getAttribute('data-field'));
+                username = usernameJson['un'];
+            } catch (e) {
+                console.error(e);
+            }
+        }
 
-        threads.push({thread_id, author, title});
+        threads.push({thread_id, username, nickname, title});
         return threads;
     }, []);
 };

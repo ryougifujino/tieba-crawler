@@ -60,7 +60,7 @@ async function _crawl(barName, from, to) {
                 flatMap(pageThreadsList, pageThreads => pageThreads)
                     .forEach(async thread => {
                         try {
-                            await saveThread(thread.thread_id, thread.author, thread.title)
+                            await saveThread(thread.thread_id, barName, thread.username, thread.nickname, thread.title);
                         } catch (e) {
                             // unlikely to happen
                             logger.error("threads-crawler#_crawl#persistInOrder@saveThread", e);
