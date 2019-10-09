@@ -62,7 +62,7 @@
         computed: {
             visibleThreads() {
                 return this.threads
-                    .filter(thread => thread.author.includes(this.keywordAuthor))
+                    .filter(thread => thread.nickname.includes(this.keywordAuthor))
                     .filter(thread => thread.title.includes(this.keywordTitle))
                     .slice(0, this.visibleThreadsLimit);
             }
