@@ -123,13 +123,23 @@ const getComments = async (threadId, postId, page) => {
     const result = await request.get('https', `://tieba.baidu.com/p/comment?tid=${threadId}&pid=${postId}&pn=${page}&t=${t}`);
     const commentNodes = [...new JSDOM(result).window.document.querySelectorAll('.lzl_single_post.j_lzl_s_p')];
     return commentNodes.map(commentNode => {
+        const commentIdNode = commentNode.querySelector('a');
+        const comment_id = commentIdNode ? commentIdNode.getAttribute('name') : null;
         const fromNode = commentNode.querySelector('.lzl_cnt > a');
-        const from_username = fromNode.getAttribute('username');
-        const from_nickname = fromNode.textContent;
+        const username = fromNode.getAttribute('username');
+        const nickname = fromNode.textContent;
         const contentNode = commentNode.querySelector('.lzl_cnt .lzl_content_main');
         const content = (contentNode.textContent).trim();
         const created_time = commentNode.querySelector('.lzl_cnt .lzl_content_reply .lzl_time').textContent;
-        return {from_username, from_nickname, content, created_time};
+        return {
+            comment_id,
+            content,
+            created_time,
+            post_id: postId,
+            thread_id: threadId,
+            username,
+            nickname
+        };
     });
 };
 

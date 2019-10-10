@@ -12,7 +12,8 @@ Thread.init({
     bar_name: DataTypes.STRING,
     username: DataTypes.STRING,
     nickname: DataTypes.STRING,
-    title: DataTypes.STRING
+    title: DataTypes.STRING,
+    created_time: DataTypes.DATE
 }, {sequelize, modelName: 'thread'});
 
 async function saveThread(threadId, barName, username, nickname, title) {
