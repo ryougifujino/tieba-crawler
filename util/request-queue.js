@@ -3,7 +3,7 @@ function deleteFunctionFromArray(array, func) {
     index !== -1 && array.splice(index, 1);
 }
 
-class RequestQueue {
+export class RequestQueue {
     constructor(concurrentMax, handler) {
         this.concurrentMax = concurrentMax;
         this.handler = handler;
