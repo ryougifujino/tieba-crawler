@@ -2,6 +2,7 @@ const {JSDOM} = require('jsdom');
 const request = require('../util/request-promise.js');
 const {timestampToReadable} = require('../util/date-utils');
 
+const RE_PADDED_DATE = /\d{4}-\d{2}-\d{2} \d{2}:\d{2}/;
 const barProtocols = {};
 
 const getPageThreads = async (barName, page) => {
@@ -82,13 +83,20 @@ const getPagePosts = async (barName, threadId, page) => {
         const contentNode = post.querySelector('.d_post_content_main .p_content > cc .d_post_content.j_d_post_content');
         const content = (contentNode.innerHTML || '').trim();
 
-        const postTailNodes = post.querySelectorAll('.d_post_content_main .core_reply.j_lzl_wrapper .post-tail-wrap > .tail-info') || [];
-        const created_time = ([...postTailNodes].pop() || {}).textContent;
+        let created_time = null;
+        if (basic.content.date) {
+            created_time = basic.content.date;
+        } else {
+            const postTailNode = post.querySelector('.d_post_content_main .core_reply .core_reply_tail');
+            const createdTimeMatcher = RE_PADDED_DATE.exec(postTailNode.textContent);
+            created_time = createdTimeMatcher && createdTimeMatcher[0];
+        }
 
         posts.push({
+            thread_id: threadId,
+            post_id,
             nickname,
             username,
-            post_id,
             floor_number,
             comment_total,
             content,
