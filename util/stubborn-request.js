@@ -1,4 +1,4 @@
-export class StubbornRequest {
+class StubbornRequest {
     constructor(requestTask, maxAttemptTimes = 20) {
         this.requestTask = requestTask;
         this.maxAttemptTimes = maxAttemptTimes;
@@ -17,3 +17,7 @@ export class StubbornRequest {
         }
     }
 }
+
+module.exports = {
+    StubbornRequest
+};

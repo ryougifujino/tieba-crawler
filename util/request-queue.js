@@ -1,13 +1,20 @@
+const logger = require('../util/logger');
+
 function deleteFunctionFromArray(array, func) {
     const index = array.indexOf(func);
     index !== -1 && array.splice(index, 1);
 }
 
-export class RequestQueue {
-    constructor(concurrentMax, handler) {
+const executeTask = Symbol('executeTask');
+
+class RequestQueue {
+    constructor(concurrentMax, handler, endlessMode = false) {
         this.concurrentMax = concurrentMax;
         this.handler = handler;
         this.taskQueue = [];
+        this.onFinished = null;
+        this.finished = false;
+        this.endlessMode = endlessMode;
     }
 
     getLastConcurrentTask() {
@@ -22,34 +29,51 @@ export class RequestQueue {
         }
     }
 
-    executeTask(requestTask) {
+    [executeTask](requestTask) {
         requestTask()
             .then(data => {
-                this.handler(data);
+                this.handler(data, requestTask.extraData);
                 deleteFunctionFromArray(this.taskQueue, requestTask);
                 if (this.taskQueue.length >= this.concurrentMax) {
                     // if taskQueue's length is still >= concurrentMax after deleting a task,
                     // we will execute the new coming concurrent task
-                    this.executeTask(this.getLastConcurrentTask());
+                    this[executeTask](this.getLastConcurrentTask());
+                }
+                if (this.taskQueue.length === 0 && !this.endlessMode) {
+                    this.finished = true;
+                    this.onFinished && this.onFinished();
                 }
             })
-            .catch(() => {
+            .catch((e) => {
+                logger.error("request-queue#RequestQueue#executeTask@catch", e);
                 deleteFunctionFromArray(this.taskQueue, requestTask);
                 if (this.taskQueue.length >= this.concurrentMax) {
-                    this.executeTask(this.getLastConcurrentTask());
+                    this[executeTask](this.getLastConcurrentTask());
                     this.taskQueue.splice(this.concurrentMax, 0, requestTask);
                 } else {
                     this.taskQueue.push(requestTask);
                     // also the last task
-                    this.executeTask(requestTask);
+                    this[executeTask](requestTask);
                 }
             });
     }
 
-    push(requestTask) {
+    push(requestTask, extraData) {
+        if (this.finished) {
+            throw new Error('request queue has finished')
+        }
+        requestTask.extraData = extraData;
         this.taskQueue.push(requestTask);
         if (this.taskQueue.length <= this.concurrentMax) {
-            this.executeTask(requestTask);
+            this[executeTask](requestTask);
         }
     }
+
+    finally(onFinished) {
+        this.onFinished = onFinished;
+    }
 }
+
+module.exports = {
+    RequestQueue
+};
