@@ -36,6 +36,7 @@ function getProtocol(url) {
 
 function get(protocol, url) {
     url = protocol + encodeURI(url);
+    logger.verbose(url);
     return new Promise((resolve, reject) => {
         let request = REQUEST[protocol]['get'](url, GET_OPTIONS, response => {
             let body = [];
