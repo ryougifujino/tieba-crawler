@@ -45,9 +45,13 @@ const getThreadMaxPageNumber = async (barName, threadId) => {
         return new Error('unknown protocol of the provided bar name');
     }
     const body = await request.get(protocol, `://tieba.baidu.com/p/${threadId}?pn=1`);
+    // the thread was deleted
+    if (body === '') {
+        return 0;
+    }
     const {window: {document}} = new JSDOM(body);
-    const pageNumberNode = document.querySelector('.p_thread .l_thread_info .l_posts_num > li:last-child input');
-    const pageNumberString = pageNumberNode.getAttribute('max-page') || '0';
+    const pageNumberNode = document.querySelector('.p_thread .l_thread_info .l_posts_num > .l_reply_num span:last-child');
+    const pageNumberString = pageNumberNode.textContent || '0';
     return parseInt(pageNumberString);
 };
 
