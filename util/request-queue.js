@@ -1,4 +1,5 @@
 const logger = require('../util/logger');
+const REPORT_STEPS = 50;
 
 function deleteFunctionFromArray(array, func) {
     const index = array.indexOf(func);
@@ -8,13 +9,15 @@ function deleteFunctionFromArray(array, func) {
 const executeTask = Symbol('executeTask');
 
 class RequestQueue {
-    constructor(concurrentMax, handler, endlessMode = false) {
+    constructor(concurrentMax, handler, tag = '', endlessMode = false) {
         this.concurrentMax = concurrentMax;
         this.handler = handler;
         this.taskQueue = [];
         this.onFinished = null;
         this.finished = false;
+        this.tag = tag;
         this.endlessMode = endlessMode;
+        this.finishedRequestCount = 0;
     }
 
     getLastConcurrentTask() {
@@ -32,6 +35,12 @@ class RequestQueue {
     [executeTask](requestTask) {
         requestTask()
             .then(data => {
+                // success
+                this.finishedRequestCount++;
+                if (this.finishedRequestCount % REPORT_STEPS === 0) {
+                    console.log(`${this.tag || 'request-queue'}: ${this.finishedRequestCount} requests has finished.`);
+                }
+
                 this.handler(data, requestTask.extraData);
                 deleteFunctionFromArray(this.taskQueue, requestTask);
                 if (this.taskQueue.length >= this.concurrentMax) {

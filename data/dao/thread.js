@@ -27,7 +27,17 @@ async function saveThread(threadId, barName, username, nickname, title) {
     });
 }
 
+async function findAllThreadIds(barName) {
+    const threads = await Thread.findAll({
+        attributes: ['id'],
+        where: {
+            bar_name: barName
+        }
+    });
+    return threads.map(thread => thread.id);
+}
+
 module.exports = {
-    Thread,
-    saveThread
+    saveThread,
+    findAllThreadIds
 };

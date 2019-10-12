@@ -29,6 +29,5 @@ async function saveComment(commentId, postId, nickname, username, content, creat
 }
 
 module.exports = {
-    Comment,
     saveComment
 };

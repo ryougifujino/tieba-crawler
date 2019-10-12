@@ -18,6 +18,18 @@ Post.init({
     created_time: DataTypes.DATE
 }, {sequelize, modelName: 'post'});
 
+async function savePosts(posts) {
+    await sequelize.sync();
+    try {
+        await Post.bulkCreate(posts, {
+            updateOnDuplicate: ['thread_id', 'nickname', 'username', 'comment_total']
+        });
+    } catch (e) {
+        console.error(e)
+    }
+
+}
+
 module.exports = {
-    Post
+    savePosts
 };
