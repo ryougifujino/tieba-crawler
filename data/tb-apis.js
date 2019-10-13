@@ -81,7 +81,12 @@ const getPagePosts = async (barName, threadId, page) => {
         const comment_total = basic.content.comment_num;
 
         const contentNode = post.querySelector('.d_post_content_main .p_content > cc .d_post_content.j_d_post_content');
+        if (!contentNode) {
+            // ad case, just return
+            return posts;
+        }
         const content = (contentNode.innerHTML || '').trim();
+
 
         let created_time = null;
         if (basic.content.date) {
