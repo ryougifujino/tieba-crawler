@@ -73,8 +73,8 @@ const getPagePosts = async (barName, threadId, page) => {
             console.error("post data-field is not a JSON string");
         }
 
-        const nickname = basic.author.user_name;
-        const username = basic.author.user_nickname ? basic.author.user_nickname : nickname;
+        const username = basic.author.user_name;
+        const nickname = basic.author.user_nickname ? basic.author.user_nickname : username;
 
         const post_id = basic.content.post_id;
         const floor_number = basic.content.post_no;
