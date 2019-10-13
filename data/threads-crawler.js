@@ -48,29 +48,26 @@ function _crawl(barName, from, to) {
 
     const persistInOrder = () => {
         Promise.all(pageThreadsPromiseList).then(pageThreadsList => {
-            // check empty result and refresh
+            // check empty result
             let indexListOfEmptyPageThreads = [];
             pageThreadsList.forEach((pageThreads, index) => {
                 if (!pageThreads.length) {
                     indexListOfEmptyPageThreads.push(from + index);
-                    refreshPageThreadsPromise(index);
                 }
             });
 
             if (indexListOfEmptyPageThreads.length) {
-                // has empty result, retry
-                logger.log(`[${barName}] PageNumber∈{${indexListOfEmptyPageThreads.join(',')}} are empty, retrying...`);
-                persistInOrder();
-            } else {
-                // all result are ok
-                pageThreadsList.forEach(pageThreads => {
-                    let pageContent = pageThreads.map(thread => JSON.stringify(thread)).join(SEPARATOR) + SEPARATOR;
-                    fs.appendFileSync(outputFilePath, pageContent);
-                });
-                logger.log(`[${barName}] PageNumber∈[${from + 1}, ${end}] finished.`);
-                lock = false;
-                _crawl(barName, end, to);
+                // has empty result, just log
+                logger.log(`[${barName}] PageNumber∈{${indexListOfEmptyPageThreads.join(',')}} are empty, just jump over`);
             }
+            // all result are ok
+            pageThreadsList.forEach(pageThreads => {
+                let pageContent = pageThreads.map(thread => JSON.stringify(thread)).join(SEPARATOR) + SEPARATOR;
+                fs.appendFileSync(outputFilePath, pageContent);
+            });
+            logger.log(`[${barName}] PageNumber∈[${from + 1}, ${end}] finished.`);
+            lock = false;
+            _crawl(barName, end, to);
         }).catch(reason => {
             logger.error("threads-crawler#_crawl#persistInOrder@catch", reason);
 

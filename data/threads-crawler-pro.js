@@ -45,34 +45,31 @@ async function _crawl(barName, from, to) {
 
     const persistInOrder = () => {
         Promise.all(pageThreadsPromiseList).then(pageThreadsList => {
-            // check empty result and refresh
+            // check empty result
             let indexListOfEmptyPageThreads = [];
             pageThreadsList.forEach((pageThreads, index) => {
                 if (!pageThreads.length) {
                     indexListOfEmptyPageThreads.push(from + index);
-                    refreshPageThreadsPromise(index);
                 }
             });
 
             if (indexListOfEmptyPageThreads.length) {
-                // has empty result, retry
-                logger.log(`[${barName}] PageNumber∈{${indexListOfEmptyPageThreads.join(',')}} are empty, retrying...`);
-                persistInOrder();
-            } else {
-                // all result are ok
-                flatMap(pageThreadsList, pageThreads => pageThreads)
-                    .forEach(async thread => {
-                        try {
-                            await saveThread(thread.thread_id, barName, thread.username, thread.nickname, thread.title);
-                        } catch (e) {
-                            // unlikely to happen
-                            logger.error("threads-crawler-pro#_crawl#persistInOrder@saveThread", e);
-                        }
-                    });
-                logger.log(`[${barName}] PageNumber∈[${from + 1}, ${end}] finished.`);
-                lock = false;
-                _crawl(barName, end, to);
+                // has empty result, just log
+                logger.log(`[${barName}] PageNumber∈{${indexListOfEmptyPageThreads.join(',')}} are empty, just jump over`);
             }
+            // all result are ok
+            flatMap(pageThreadsList, pageThreads => pageThreads)
+                .forEach(async thread => {
+                    try {
+                        await saveThread(thread.thread_id, barName, thread.username, thread.nickname, thread.title);
+                    } catch (e) {
+                        // unlikely to happen
+                        logger.error("threads-crawler-pro#_crawl#persistInOrder@saveThread", e);
+                    }
+                });
+            logger.log(`[${barName}] PageNumber∈[${from + 1}, ${end}] finished.`);
+            lock = false;
+            _crawl(barName, end, to);
         }).catch(reason => {
             logger.error("threads-crawler-pro#_crawl#persistInOrder@catch", reason);
 
@@ -99,7 +96,7 @@ async function crawlThreadsContent(barName) {
     const threadIds = await findAllThreadIds(barName);
     // TODO: call resolve
     return new Promise((resolve, reject) => {
-        const pagePostsQueue = new RequestQueue(50, pagePosts => {
+        const pagePostsQueue = new RequestQueue(100, pagePosts => {
             savePosts(pagePosts.map(pagePost => {
                 pagePost.id = pagePost.post_id;
                 delete pagePost.post_id;
@@ -112,7 +109,7 @@ async function crawlThreadsContent(barName) {
             }
         }, 'PAGE_POSTS_QUEUE');
 
-        const maxPageNumberQueue = new RequestQueue(50, (maxPageNumber, threadId) => {
+        const maxPageNumberQueue = new RequestQueue(100, (maxPageNumber, threadId) => {
             for (let pageNumber = 1; pageNumber <= maxPageNumber; pageNumber++) {
                 pagePostsQueue.push(() => tbApis.getPagePosts(barName, threadId, pageNumber));
             }
