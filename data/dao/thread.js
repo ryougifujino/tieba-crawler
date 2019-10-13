@@ -1,5 +1,6 @@
 const {sequelize} = require('.');
-const {Model, DataTypes} = require('sequelize');
+const {Model, DataTypes, Sequelize} = require('sequelize');
+const Op = Sequelize.Op;
 
 class Thread extends Model {
 }
@@ -37,7 +38,20 @@ async function findAllThreadIds(barName) {
     return threads.map(thread => thread.id);
 }
 
+async function updateThreadCreatedTime(threadId, createdTime) {
+    await Thread.update({
+        created_time: createdTime
+    }, {
+        where: {
+            id: {
+                [Op.eq]: threadId
+            }
+        }
+    });
+}
+
 module.exports = {
     saveThread,
-    findAllThreadIds
+    findAllThreadIds,
+    updateThreadCreatedTime
 };

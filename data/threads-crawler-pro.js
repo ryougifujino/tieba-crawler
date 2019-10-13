@@ -2,7 +2,7 @@ const {flatMap} = require('lodash');
 const tbApis = require('./tb-apis');
 const logger = require('../util/logger');
 const config = require('./config');
-const {saveThread, findAllThreadIds} = require('./dao/thread');
+const {saveThread, findAllThreadIds, updateThreadCreatedTime} = require('./dao/thread');
 const {savePosts} = require('./dao/post');
 const {RequestQueue} = require('../util/request-queue');
 
@@ -105,6 +105,11 @@ async function crawlThreadsContent(barName) {
                 delete pagePost.post_id;
                 return pagePost;
             }));
+
+            const firstPost = pagePosts[0];
+            if (firstPost && firstPost.floor_number === 1) {
+                updateThreadCreatedTime(firstPost.thread_id, firstPost.created_time);
+            }
         }, 'PAGE_POSTS_QUEUE');
 
         const maxPageNumberQueue = new RequestQueue(50, (maxPageNumber, threadId) => {
