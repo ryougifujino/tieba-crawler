@@ -52,6 +52,9 @@ class RequestQueue {
                     this.finished = true;
                     this.onFinished && this.onFinished();
                 }
+                if (this.taskQueue.length === 0 && this.onEmpty) {
+                    this.onEmpty();
+                }
             })
             .catch((e) => {
                 logger.error("request-queue#RequestQueue#executeTask@catch", e);
@@ -79,7 +82,18 @@ class RequestQueue {
     }
 
     finally(onFinished) {
+        if (this.endlessMode) {
+            throw new Error('cannot set onFinished callback in endless mode');
+        }
         this.onFinished = onFinished;
+    }
+
+    setOnEmpty(onEmpty) {
+        this.onEmpty = onEmpty;
+    }
+
+    isEmpty() {
+        return this.taskQueue.length === 0;
     }
 }
 

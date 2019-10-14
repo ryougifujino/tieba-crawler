@@ -1,6 +1,6 @@
 const fs = require('fs');
 
-const OUTPUT_DIR = "output/logs/";
+const OUTPUT_DIR = "/output/logs/";
 const FLAG_VERBOSE = "VERBOSE";
 const FLAG_LOG = "LOG";
 const FLAG_ERROR = "ERROR";

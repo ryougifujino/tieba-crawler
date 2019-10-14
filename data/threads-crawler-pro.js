@@ -97,32 +97,55 @@ async function crawlThreadsContent(barName) {
     // TODO: call resolve
     return new Promise((resolve, reject) => {
         const pagePostsQueue = new RequestQueue(100, pagePosts => {
-            savePosts(pagePosts.map(pagePost => {
-                pagePost.id = pagePost.post_id;
-                delete pagePost.post_id;
-                return pagePost;
-            }));
+            savePagePostsAndUpdateThreadCreatedTime(pagePosts);
+        }, 'PAGE_POSTS_QUEUE', true);
 
-            const firstPost = pagePosts[0];
-            if (firstPost && firstPost.floor_number === 1) {
-                updateThreadCreatedTime(firstPost.thread_id, firstPost.created_time);
-            }
-        }, 'PAGE_POSTS_QUEUE');
+        const maxPageNumberWithFirstPagePostsQueue = new RequestQueue(100, (maxPageNumberWithFirstPagePosts, threadId) => {
+            const maxPageNumber = maxPageNumberWithFirstPagePosts.max_page_number;
+            const firstPagePosts = maxPageNumberWithFirstPagePosts.posts;
+            savePagePostsAndUpdateThreadCreatedTime(firstPagePosts);
 
-        const maxPageNumberQueue = new RequestQueue(100, (maxPageNumber, threadId) => {
-            for (let pageNumber = 1; pageNumber <= maxPageNumber; pageNumber++) {
+            // starting from the second page
+            for (let pageNumber = 2; pageNumber <= maxPageNumber; pageNumber++) {
                 pagePostsQueue.push(() => tbApis.getPagePosts(barName, threadId, pageNumber));
             }
-        }, 'MAX_PAGE_NUMBER_QUEUE');
-        threadIds.forEach(threadId => maxPageNumberQueue.push(
-            () => tbApis.getThreadMaxPageNumber(barName, threadId), threadId));
-        maxPageNumberQueue.finally(() => {
-            console.log('maxPageNumberQueue end')
+        }, 'MAX_PAGE_NUMBER_WITH_FIRST_PAGE_POSTS_QUEUE');
+        threadIds.forEach(threadId => maxPageNumberWithFirstPagePostsQueue.push(
+            () => tbApis.getThreadMaxPageNumberWithFirstPagePosts(barName, threadId), threadId));
+        let isMaxPageNumberWithFirstPagePostsQueueFinished = false;
+        maxPageNumberWithFirstPagePostsQueue.finally(() => {
+            console.log('MAX PAGE NUMBER WITH FIRST PAGE POSTS QUEUE HAS FINISHED');
+            isMaxPageNumberWithFirstPagePostsQueueFinished = true;
+            if (pagePostsQueue.isEmpty()) {
+                promptPagePostsQueueFinished();
+                resolve();
+            }
         });
-        pagePostsQueue.finally(() => {
-            console.log('pagePostsQueue end')
+        pagePostsQueue.setOnEmpty(() => {
+            if (isMaxPageNumberWithFirstPagePostsQueueFinished) {
+                promptPagePostsQueueFinished();
+                resolve();
+            }
         });
     });
+}
+
+// helpers
+async function savePagePostsAndUpdateThreadCreatedTime(pagePosts) {
+    await savePosts(pagePosts.map(pagePost => {
+        pagePost.id = pagePost.post_id;
+        delete pagePost.post_id;
+        return pagePost;
+    }));
+
+    const firstPost = pagePosts[0];
+    if (firstPost && firstPost.floor_number === 1) {
+        await updateThreadCreatedTime(firstPost.thread_id, firstPost.created_time);
+    }
+}
+
+function promptPagePostsQueueFinished() {
+    console.log('PAGE POSTS QUEUE HAS FINISHED');
 }
 
 module.exports = {
