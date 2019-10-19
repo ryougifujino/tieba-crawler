@@ -94,7 +94,6 @@ async function crawl(barName, endPage) {
 
 async function crawlThreadsContent(barName) {
     const threadIds = await findAllThreadIds(barName);
-    // TODO: call resolve
     return new Promise((resolve, reject) => {
         const pagePostsQueue = new RequestQueue(100, pagePosts => {
             savePagePostsAndUpdateThreadCreatedTime(pagePosts);
