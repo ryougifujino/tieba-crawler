@@ -2,6 +2,7 @@ const fs = require('fs');
 
 const OUTPUT_DIR = "output/logs/";
 const FLAG_VERBOSE = "VERBOSE";
+const FLAG_DEBUG = "DEBUG";
 const FLAG_LOG = "LOG";
 const FLAG_ERROR = "ERROR";
 
@@ -26,6 +27,10 @@ function verbose(...messages) {
     _(FLAG_VERBOSE, ...messages);
 }
 
+function debug(...messages) {
+    _(FLAG_DEBUG, ...messages);
+}
+
 function log(...messages) {
     console.log(...messages);
     _(FLAG_LOG, ...messages);
@@ -38,6 +43,7 @@ function error(...messages) {
 
 module.exports = {
     verbose,
+    debug,
     log,
     error
 };
