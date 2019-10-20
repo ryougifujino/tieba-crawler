@@ -94,6 +94,7 @@ async function crawl(barName, endPage) {
 
 async function crawlThreadsContent(barName) {
     const threadIds = await findAllThreadIds(barName);
+    logger.debug(barName, `length of thread id list is: ${threadIds.length}`);
     return new Promise((resolve, reject) => {
         const pagePostsQueue = new RequestQueue(100, pagePosts => {
             savePagePostsAndUpdateThreadCreatedTime(pagePosts);
@@ -112,8 +113,8 @@ async function crawlThreadsContent(barName) {
         threadIds.forEach(threadId => maxPageNumberWithFirstPagePostsQueue.push(
             () => tbApis.getThreadMaxPageNumberWithFirstPagePosts(barName, threadId), threadId));
         let isMaxPageNumberWithFirstPagePostsQueueFinished = false;
-        maxPageNumberWithFirstPagePostsQueue.finally(() => {
-            console.log('MAX PAGE NUMBER WITH FIRST PAGE POSTS QUEUE HAS FINISHED');
+        maxPageNumberWithFirstPagePostsQueue.finally((total, finishedCount) => {
+            logger.log('MAX PAGE NUMBER WITH FIRST PAGE POSTS QUEUE HAS FINISHED', `${finishedCount}/${total}`);
             isMaxPageNumberWithFirstPagePostsQueueFinished = true;
             if (pagePostsQueue.isEmpty()) {
                 promptPagePostsQueueFinished();
@@ -144,7 +145,7 @@ async function savePagePostsAndUpdateThreadCreatedTime(pagePosts) {
 }
 
 function promptPagePostsQueueFinished() {
-    console.log('PAGE POSTS QUEUE HAS FINISHED');
+    logger.log('PAGE POSTS QUEUE HAS FINISHED');
 }
 
 module.exports = {

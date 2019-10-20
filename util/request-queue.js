@@ -3,7 +3,11 @@ const REPORT_STEPS = 50;
 
 function deleteFunctionFromArray(array, func) {
     const index = array.indexOf(func);
-    index !== -1 && array.splice(index, 1);
+    if (index !== -1) {
+        array.splice(index, 1);
+    } else {
+        logger.error('func not found');
+    }
 }
 
 const executeTask = Symbol('executeTask');
@@ -18,6 +22,7 @@ class RequestQueue {
         this.tag = tag;
         this.endlessMode = endlessMode;
         this.finishedRequestCount = 0;
+        this.pushedRequestCount = 0;
     }
 
     getLastConcurrentTask() {
@@ -35,10 +40,11 @@ class RequestQueue {
     [executeTask](requestTask) {
         requestTask()
             .then(data => {
+                logger.debug(this.tag, `task queue count is: ${this.taskQueue.length}`);
                 // success
                 this.finishedRequestCount++;
                 if (this.finishedRequestCount % REPORT_STEPS === 0) {
-                    console.log(`${this.tag || 'request-queue'}: ${this.finishedRequestCount} requests has finished.`);
+                    logger.log(`${this.tag || 'request-queue'}: ${this.finishedRequestCount} requests has finished.`);
                 }
 
                 this.handler(data, requestTask.extraData);
@@ -50,13 +56,15 @@ class RequestQueue {
                 }
                 if (this.taskQueue.length === 0 && !this.endlessMode) {
                     this.finished = true;
-                    this.onFinished && this.onFinished();
+                    this.onFinished && this.onFinished(this.pushedRequestCount, this.finishedRequestCount);
+                    logger.debug(this.tag, `onFinished was called, ${this.finishedRequestCount}/${this.pushedRequestCount}`);
                 }
                 if (this.taskQueue.length === 0 && this.onEmpty) {
                     this.onEmpty();
                 }
             })
             .catch((e) => {
+                logger.debug(this.tag, `task queue count is: ${this.taskQueue.length}`);
                 logger.error("request-queue#RequestQueue#executeTask@catch", e);
                 deleteFunctionFromArray(this.taskQueue, requestTask);
                 if (this.taskQueue.length >= this.concurrentMax) {
@@ -76,6 +84,8 @@ class RequestQueue {
         }
         requestTask.extraData = extraData;
         this.taskQueue.push(requestTask);
+        this.pushedRequestCount++;
+        logger.debug(this.tag, `a request task was pushed, total: ${this.pushedRequestCount}`);
         if (this.taskQueue.length <= this.concurrentMax) {
             this[executeTask](requestTask);
         }
