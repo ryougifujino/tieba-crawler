@@ -19,7 +19,7 @@
   "homepage": "https://github.com/ryougifujino/tieba-crawler#readme",
   "dependencies": {
     "@types/lodash": "^4.14.142",
-    "jsdom": "^14.0.0",
+    "jsdom": "^16.5.0",
     "lodash": "^4.17.15",
     "sequelize": "^5.19.3",
     "sqlite3": "^4.1.0"
